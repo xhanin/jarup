@@ -104,4 +104,6 @@ replace --from=myexample.properties --to=example.properties
 
 ## Status
 
-Only a README at the moment, to gather feedback on the idea :)
+Only cat command is implemented ATM, just starting the concept implementation.
+
+Star the project to encourage me :)
