@@ -46,11 +46,11 @@ You can perform search / replace in any text file:
 
 simple search replace with default jarup encoding (UTF-8):
 
-`jarup example.jar search-replace example1.xml TOKEN new value` 
+`jarup example.jar search-replace example1.xml TOKEN newvalue`
 
 simple search replace with specific encoding:
 
-`jarup example.jar search-replace example1.xml TOKEN newvalue --encoding=ISO-8859-1`
+`jarup example.jar search-replace example2.xml TOKEN newvalue --encoding=ISO-8859-1`
 
 regular expression search / replace:
 
