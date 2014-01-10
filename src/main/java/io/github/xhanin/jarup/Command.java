@@ -7,7 +7,7 @@ import java.io.IOException;
  * Time: 18:43
  */
 public interface Command<C extends Command> {
-    public C in(WorkingCopy workingCopy);
+    public C baseOn(WorkingCopy workingCopy);
     public C parse(String[] args);
     public void execute() throws IOException;
 }

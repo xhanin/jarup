@@ -51,6 +51,14 @@ public class WorkingCopy implements AutoCloseable {
         return this;
     }
 
+    public String getDefaultCharsetFor(String path) {
+        if (path.endsWith(".properties")) {
+            return "ISO-8859-1";
+        } else {
+            return "UTF-8";
+        }
+    }
+
     @Override
     public void close() throws Exception {
         if (updated) {

@@ -1,6 +1,7 @@
 package io.github.xhanin.jarup;
 
 import io.github.xhanin.jarup.commands.CatCommand;
+import io.github.xhanin.jarup.commands.SearchReplaceCommand;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -28,7 +29,7 @@ public class Jarup {
         try (WorkingCopy workingCopy = WorkingCopy.prepareFor(Paths.get(jar))) {
             String[] commandArgs = new String[args.length - 2];
             System.arraycopy(args, 2, commandArgs, 0, commandArgs.length);
-            c.in(workingCopy).parse(commandArgs).execute();
+            c.baseOn(workingCopy).parse(commandArgs).execute();
         } catch (IOException e) {
             System.err.println("IO ERROR: " + e.getMessage());
         } catch (Exception e) {
@@ -37,10 +38,15 @@ public class Jarup {
     }
 
     private static Command getCommand(String command) {
-        if ("cat".equals(command)) {
-            return new CatCommand();
+        switch (command) {
+            case "cat":
+            case "extract":
+                return new CatCommand();
+            case "search-replace":
+                return new SearchReplaceCommand();
+            default:
+                return null;
         }
-        return null;
     }
 
     private static void usage() {

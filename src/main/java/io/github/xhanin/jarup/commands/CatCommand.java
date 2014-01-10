@@ -17,7 +17,7 @@ public class CatCommand implements Command<CatCommand> {
     public CatCommand() {
     }
 
-    public CatCommand in(WorkingCopy workingCopy) {
+    public CatCommand baseOn(WorkingCopy workingCopy) {
         this.workingCopy = workingCopy;
         return this;
     }
@@ -46,11 +46,7 @@ public class CatCommand implements Command<CatCommand> {
             throw new IllegalStateException("path must be set");
         }
         if (charset == null) {
-            if (path.endsWith(".properties")) {
-                charset = "ISO-8859-1";
-            } else {
-                charset = "UTF-8";
-            }
+            charset = workingCopy.getDefaultCharsetFor(path);
         }
 
         System.out.print(workingCopy.readFile(path, charset));
