@@ -104,6 +104,11 @@ replace --from=myexample.properties --to=example.properties
 
 ## Status
 
-Only cat command is implemented ATM, just starting the concept implementation.
+Development was started very recently.
+
+Implemented commands / features:
+
+- cat
+- search-replace
 
 Star the project to encourage me :)
