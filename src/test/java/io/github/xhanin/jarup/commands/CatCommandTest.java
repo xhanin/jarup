@@ -19,7 +19,7 @@ public class CatCommandTest {
 
     @Test
     public void should_cat_file() throws Exception {
-        new CatCommand(wc.getWorkingCopy())
+        new CatCommand().in(wc.getWorkingCopy())
                 .from("example.properties").withEncoding("ISO-8859-1")
                 .execute();
 
@@ -29,7 +29,7 @@ public class CatCommandTest {
 
     @Test
     public void should_cat_properties_file_with_default_encoding() throws Exception {
-        new CatCommand(wc.getWorkingCopy())
+        new CatCommand().in(wc.getWorkingCopy())
                 .from("example.properties")
                 .execute();
 
@@ -39,7 +39,7 @@ public class CatCommandTest {
 
     @Test
     public void should_cat_file_with_default_encoding() throws Exception {
-        new CatCommand(wc.getWorkingCopy())
+        new CatCommand().in(wc.getWorkingCopy())
                 .from("example1.xml")
                 .execute();
 
