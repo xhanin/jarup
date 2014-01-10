@@ -35,6 +35,21 @@ public class WorkingCopyTest {
         }
     }
 
+    @Test
+    public void should_update_jar_after_write() throws Exception {
+        Path exampleJarUnderTest = getJarUnderTest("example.jar");
+
+        try (WorkingCopy wc = WorkingCopy.prepareFor(exampleJarUnderTest)) {
+            assertThat(wc).isNotNull();
+
+            wc.writeFile("test.txt", "UTF-8", "this is a test");
+        }
+
+        try (WorkingCopy wc = WorkingCopy.prepareFor(exampleJarUnderTest)) {
+            String s = wc.readFile("test.txt", "UTF-8");
+            assertThat(s).isEqualTo("this is a test");
+        }
+    }
 
 
     private Path getJarUnderTest(String jar) throws IOException {

@@ -1,8 +1,6 @@
 package io.github.xhanin.jarup;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -25,5 +23,11 @@ public class IOUtils {
     public static String toString(File file, Charset charset) throws IOException {
         byte[] encoded = Files.readAllBytes(file.toPath());
         return charset.decode(ByteBuffer.wrap(encoded)).toString();
+    }
+
+    public static void write(File file, Charset charset, String content) throws IOException {
+        try (PrintWriter out = new PrintWriter(file, charset.toString())) {
+            out.print(content);
+        }
     }
 }
