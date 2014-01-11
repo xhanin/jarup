@@ -9,7 +9,7 @@ jarup
 It is very convenient to use to update configuration files packaged inside a jar. It's a command line tool which can seamlessly be integrated in automated processes.
 
 ## Install
-`jarup` is packaged as an executable jar file, so you can simply download it and use it with `java -jar jarup.jar` on any platform with java7 properly installed.
+`jarup` is packaged as a small (<20kB) executable jar file, so you can simply [download it](https://rawgithub.com/xhanin/jarup/raw/master/dist/jarup.jar) and use it with `java -jar jarup.jar` on any platform with java7 properly installed.
 
 It is more convenient to use it with a shell/batch file named jarup. you can do `java -jar jarup.jar gen-script` to generate a script for your platform. 
 
@@ -110,5 +110,6 @@ Implemented commands / features:
 
 - cat
 - search-replace
+- gen-script
 
 Star the project to encourage me :)
