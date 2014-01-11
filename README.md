@@ -18,31 +18,6 @@ On Linux/MacOSX you can also use this simple one line install / update:
 
 ## Usage
 
-### set a property in a properties file
-
-You can easily set a property in a standard java properties file.
-The property is replaced if it exists, and set if it doesn't exist.
-The file order is preserved.
-
-*Examples:*
-
-simple property update, with default properties file encoding (ISO 8859-1)
-
-`jarup example.jar set-property example.properties property1=newvalue`
-
-same, but with a file located in a directory inside the jar
-
-`jarup example.jar set-property example/example.properties property1=newvalue` 
-
-same, but loading properties to set from a file
-
-`jarup example.jar set-properties --from=my.properties  --into=example.properties` 
-
-same, but using UTF-8 encoding
-
-`jarup example.jar set-property example2.properties property1=newvalue --encoding=UTF-8` 
-
-
 ### do a search replace in any text file
 
 You can perform search / replace in any text file:
@@ -59,6 +34,31 @@ regular expression search / replace:
 
 `jarup example.jar search-replace example1.xml /{{(.+)}}/$1/`
 
+### set a property in a properties file [NOT IMPLEMENTED YET]
+
+You can easily set a property in a standard java properties file.
+The property is replaced if it exists, and set if it doesn't exist.
+The file order is preserved.
+
+*Examples:*
+
+simple property update, with default properties file encoding (ISO 8859-1)
+
+`jarup example.jar set-property example.properties property1=newvalue`
+
+same, but with a file located in a directory inside the jar
+
+`jarup example.jar set-property example/example.properties property1=newvalue`
+
+same, but loading properties to set from a file
+
+`jarup example.jar set-properties --from=my.properties  --into=example.properties`
+
+same, but using UTF-8 encoding
+
+`jarup example.jar set-property example2.properties property1=newvalue --encoding=UTF-8`
+
+
 ### cat a file content
 
 You can cat (i.e. output the content of a file in console) any file. It's just more convenient than extracting the file to view it. You can also specify a destination in which case it extracts the file (you can use the `jar` tool for that too). Only the latter option is possible in batch mode.
@@ -69,19 +69,19 @@ You can cat (i.e. output the content of a file in console) any file. It's just m
 
 An alias for `cat` is `extract`.
 
-### replace file content
+### replace file content [NOT IMPLEMENTED YET]
 
 Replace the content of a file. This can be performed with `jar` command line utility too, it's just convenient to use.
 
 `jarup example.jar replace --from=my.properties --to=example.properties`
 
-### work with jars of jars
+### work with jars of jars [NOT IMPLEMENTED YET]
 
 All commands can be used on files contained in jars contained in jars (or wars / ears / …):
 
 `jarup example.war cat WEB-INF/lib/example.jar:/example.properties`
 
-### batch commands
+### batch commands [NOT IMPLEMENTED YET]
 
 if you have multiple operations to perform on the target archive, it is highly recommended to batch commands.
 If you have only a few commands you can chain them by separating them with a `+`:
