@@ -17,7 +17,7 @@ sed -i '' s/0.01-SNAPSHOT/$1/g pom.xml
 
 mvn clean package
 
-cp target/jarup-$1.jar dist/jarup.jar
+cp -f target/jarup-$1.jar dist/jarup.jar
 
 git checkout -- pom.xml
 git add .
