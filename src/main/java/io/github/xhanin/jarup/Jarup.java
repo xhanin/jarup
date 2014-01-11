@@ -30,6 +30,7 @@ public class Jarup {
                 System.err.println("error when generating script: " + e);
                 System.exit(1);
             }
+            return;
         }
 
         if (args.length < 2) {
