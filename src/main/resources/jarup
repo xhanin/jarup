@@ -1,0 +1,10 @@
+#!/bin/sh
+
+PRG="$0"
+while [ -h "$PRG" ] ; do
+  PRG=`readlink "$PRG"`
+done
+
+dir=`dirname $PRG`
+
+java -jar $dir/jarup.jar $@

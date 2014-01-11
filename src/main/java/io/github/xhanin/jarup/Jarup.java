@@ -4,7 +4,9 @@ import io.github.xhanin.jarup.commands.CatCommand;
 import io.github.xhanin.jarup.commands.SearchReplaceCommand;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 /**
  * Date: 10/1/14
@@ -12,6 +14,24 @@ import java.nio.file.Paths;
  */
 public class Jarup {
     public static void main(String[] args) {
+        if (args.length == 1 && "gen-script".equals(args[0])) {
+            if (!Paths.get("jarup.jar").toFile().exists()) {
+                System.err.println("you must generate script in the directory where jarup.jar is located.");
+                System.exit(1);
+            }
+            try {
+                if (System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("windows")) {
+                    Files.copy(Jarup.class.getResourceAsStream("/jarup.bat"), Paths.get("jarup.bat"));
+                } else {
+                    Files.copy(Jarup.class.getResourceAsStream("/jarup"), Paths.get("jarup"));
+                    Paths.get("jarup").toFile().setExecutable(true);
+                }
+            } catch (IOException e) {
+                System.err.println("error when generating script: " + e);
+                System.exit(1);
+            }
+        }
+
         if (args.length < 2) {
             usage();
             System.exit(1);
