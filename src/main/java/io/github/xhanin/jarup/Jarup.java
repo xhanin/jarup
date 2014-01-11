@@ -1,16 +1,18 @@
 package io.github.xhanin.jarup;
 
-import io.github.xhanin.jarup.commands.CatCommand;
-import io.github.xhanin.jarup.commands.SearchReplaceCommand;
+import io.github.xhanin.jarup.commands.BatchCommand;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
- * Date: 10/1/14
- * Time: 18:38
+ * Jarup main class.
+ *
+ * split args in commands, handle errors and usage.
  */
 public class Jarup {
     public static void main(String[] args) {
@@ -39,18 +41,20 @@ public class Jarup {
         }
 
         String jar = args[0];
-        String command = args[1];
 
-        Command c = getCommand(command);
-        if (c == null) {
+        List<Command> commands = new ArrayList<>();
+        try {
+            commands = loadCommands(args);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
             usage();
             System.exit(1);
         }
 
         try (WorkingCopy workingCopy = WorkingCopy.prepareFor(Paths.get(jar))) {
-            String[] commandArgs = new String[args.length - 2];
-            System.arraycopy(args, 2, commandArgs, 0, commandArgs.length);
-            c.baseOn(workingCopy).parse(commandArgs).execute();
+            for (Command c : commands) {
+                c.baseOn(workingCopy).execute();
+            }
         } catch (IOException e) {
             System.err.println("IO ERROR: " + e.getMessage());
             System.exit(1);
@@ -60,17 +64,32 @@ public class Jarup {
         }
     }
 
-    private static Command getCommand(String command) {
-        switch (command) {
-            case "cat":
-            case "extract":
-                return new CatCommand();
-            case "search-replace":
-                return new SearchReplaceCommand();
-            default:
-                return null;
+    public static List<Command> loadCommands(String[] args) throws IOException {
+        CommandLoader commandLoader = new CommandLoader();
+        List<Command> l = new ArrayList<>();
+        List<String> commandArgs = new ArrayList<>();
+        for (int i = 1; i < args.length; i++) {
+            String arg = args[i];
+            if ("+".equals(arg)) {
+                loadCommands(commandLoader, l, commandArgs);
+                commandArgs = new ArrayList<>();
+            } else {
+                commandArgs.add(arg);
+            }
+        }
+        loadCommands(commandLoader, l, commandArgs);
+        return l;
+    }
+
+    private static void loadCommands(CommandLoader commandLoader, List<Command> l, List<String> commandArgs) throws IOException {
+        Command c = commandLoader.loadCommand(commandArgs);
+        if (c instanceof BatchCommand) {
+            l.addAll(((BatchCommand) c).load(commandLoader));
+        } else {
+            l.add(c);
         }
     }
+
 
     private static void usage() {
         System.out.println("usage: jarup <jarfile> <command> <command-args>");
