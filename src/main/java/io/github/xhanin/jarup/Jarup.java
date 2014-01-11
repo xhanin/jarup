@@ -14,7 +14,7 @@ public class Jarup {
     public static void main(String[] args) {
         if (args.length < 2) {
             usage();
-            return;
+            System.exit(1);
         }
 
         String jar = args[0];
@@ -23,7 +23,7 @@ public class Jarup {
         Command c = getCommand(command);
         if (c == null) {
             usage();
-            return;
+            System.exit(1);
         }
 
         try (WorkingCopy workingCopy = WorkingCopy.prepareFor(Paths.get(jar))) {
@@ -32,8 +32,10 @@ public class Jarup {
             c.baseOn(workingCopy).parse(commandArgs).execute();
         } catch (IOException e) {
             System.err.println("IO ERROR: " + e.getMessage());
+            System.exit(1);
         } catch (Exception e) {
             System.err.println("ERROR: " + e.getMessage());
+            System.exit(1);
         }
     }
 
