@@ -81,7 +81,7 @@ All commands can be used on files contained in jars contained in jars (or wars /
 
 `jarup example.war cat WEB-INF/lib/example.jar:/example.properties`
 
-### batch commands [NOT IMPLEMENTED YET]
+### batch commands
 
 if you have multiple operations to perform on the target archive, it is highly recommended to batch commands.
 If you have only a few commands you can chain them by separating them with a `+`:
@@ -114,5 +114,6 @@ Implemented commands / features:
 - cat
 - search-replace
 - gen-script
+- batching commands
 
 Star the project to encourage me :)
