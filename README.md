@@ -11,7 +11,10 @@ It is very convenient to use to update configuration files packaged inside a jar
 ## Install
 `jarup` is packaged as a small (<20kB) executable jar file, so you can simply [download it](https://rawgithub.com/xhanin/jarup/master/dist/jarup.jar) and use it with `java -jar jarup.jar` on any platform with java7 properly installed.
 
-It is more convenient to use it with a shell/batch file named jarup. you can do `java -jar jarup.jar gen-script` to generate a script for your platform. 
+It is more convenient to use it with a shell/batch file named jarup. you can do `java -jar jarup.jar gen-script` to generate a script for your platform.
+
+On Linux/MacOSX you can also use this simple one line install / update:
+`curl -s https://rawgithub.com/xhanin/jarup/master/install.sh | sh`
 
 ## Usage
 
