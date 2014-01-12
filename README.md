@@ -107,17 +107,15 @@ exec sed -i s/STRING_TO_REPLACE/STRING_TO_REPLACE_IT/g myexample.properties
 replace --from=myexample.properties --to=example.properties
 ```
 
+## How does it work
+
+Implementation is very simple: it unzips your archive in a temporary directory (called a working copy), apply your command(s), and rebuild the archive if is has been updated.
+That's why using batch of commands instead of doing multiple calls is recommended.
+
+Note also that the implementation of commands are very simple and usually mount the manipulated file in memory. So if you want to perform a search and replace on a very large file you will need a corresponding amount of memory, or prefer using native commands with surrounded by extract / replace.
+
 ## Status
 
-Development was started very recently.
+Development was started very recently, but all documented features are now implemented and have good test coverage.
 
-Implemented commands / features:
-
-- cat
-- search-replace
-- gen-script
-- batching commands
-- replace
-- jars of jars
-
-Star the project to encourage me :)
+If you want to add new commands it's pretty easy, have a look at [how existing commands are implemented](https://github.com/xhanin/jarup/tree/master/src/main/java/io/github/xhanin/jarup/commands).
