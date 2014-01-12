@@ -103,7 +103,7 @@ set-property example3.properties property3=newvalue
 In batch mode you can also exec arbitrary commands with `exec`. So if you want to use the powerful tools of choice you can use such a `commands.jarup` file:
 ```
 extract example.properties --to=myexample.properties
-exec sed -i s/STRING_TO_REPLACE/STRING_TO_REPLACE_IT/g myexample.properties
+exec sed -i .bak s/STRING_TO_REPLACE/STRING_TO_REPLACE_IT/g myexample.properties
 replace --from=myexample.properties --to=example.properties
 ```
 
