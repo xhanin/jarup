@@ -58,8 +58,11 @@ public class Jarup {
         } catch (IOException e) {
             System.err.println("IO ERROR: " + e.getMessage());
             System.exit(1);
-        } catch (Exception e) {
+        } catch (IllegalStateException | IllegalArgumentException e) {
             System.err.println("ERROR: " + e.getMessage());
+            System.exit(1);
+        } catch (Exception e) {
+            e.printStackTrace();
             System.exit(1);
         }
     }
