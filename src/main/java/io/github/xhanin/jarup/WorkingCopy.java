@@ -59,6 +59,7 @@ public class WorkingCopy implements AutoCloseable {
         File toFile = getFile(to);
         mkdir(toFile.getParentFile());
         Files.copy(Paths.get(from), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        updated = true;
         return this;
     }
 
@@ -172,6 +173,9 @@ public class WorkingCopy implements AutoCloseable {
     }
 
     private static void mkdir(File to) throws IOException {
+        if (to == null) {
+            return;
+        }
         if (to.exists()) {
             if (!to.isDirectory()) {
                 throw new IOException("can't create directory " + to.getAbsolutePath() + ": a file of same name already exists");

@@ -66,6 +66,21 @@ public class WorkingCopyTest {
     }
 
     @Test
+    public void should_update_jar_after_copy() throws Exception {
+        Path exampleJarUnderTest = getJarUnderTest("example.jar");
+
+        try (WorkingCopy wc = WorkingCopy.prepareFor(exampleJarUnderTest)) {
+            wc.copyFileFrom("src/test/resources/example.properties", "example9.properties");
+        }
+
+        try (WorkingCopy wc = WorkingCopy.prepareFor(exampleJarUnderTest)) {
+            String s = wc.readFile("example9.properties", "UTF-8");
+            assertThat(s).isEqualTo("property1=newvalue\n" +
+                    "property4=val4");
+        }
+    }
+
+    @Test
     public void should_handle_jar_of_jar_for_write() throws Exception {
         Path exampleJarUnderTest = getJarUnderTest("example.war");
 
