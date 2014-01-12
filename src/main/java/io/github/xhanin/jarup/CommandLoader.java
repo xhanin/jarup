@@ -1,5 +1,6 @@
 package io.github.xhanin.jarup;
 
+import io.github.xhanin.jarup.commands.AddCommand;
 import io.github.xhanin.jarup.commands.BatchCommand;
 import io.github.xhanin.jarup.commands.CatCommand;
 import io.github.xhanin.jarup.commands.SearchReplaceCommand;
@@ -27,6 +28,9 @@ public class CommandLoader {
             case "cat":
             case "extract":
                 return new CatCommand();
+            case "add":
+            case "replace":
+                return new AddCommand();
             case "search-replace":
                 return new SearchReplaceCommand();
             case "batch":

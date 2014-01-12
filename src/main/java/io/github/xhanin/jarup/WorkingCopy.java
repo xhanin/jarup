@@ -2,10 +2,7 @@ package io.github.xhanin.jarup;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Enumeration;
 import java.util.Random;
@@ -48,6 +45,13 @@ public class WorkingCopy implements AutoCloseable {
     public WorkingCopy writeFile(String path, String encoding, String content) throws IOException {
         IOUtils.write(new File(root, path), Charset.forName(encoding), content);
         updated = true;
+        return this;
+    }
+
+    public WorkingCopy copyFileFrom(String from, String to) throws IOException {
+        File toFile = new File(root, to);
+        mkdir(toFile.getParentFile());
+        Files.copy(Paths.get(from), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         return this;
     }
 
