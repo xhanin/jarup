@@ -1,9 +1,6 @@
 package io.github.xhanin.jarup;
 
-import io.github.xhanin.jarup.commands.AddCommand;
-import io.github.xhanin.jarup.commands.BatchCommand;
-import io.github.xhanin.jarup.commands.CatCommand;
-import io.github.xhanin.jarup.commands.SearchReplaceCommand;
+import io.github.xhanin.jarup.commands.*;
 
 import java.util.List;
 
@@ -33,6 +30,8 @@ public class CommandLoader {
                 return new AddCommand();
             case "search-replace":
                 return new SearchReplaceCommand();
+            case "set-property":
+                return new SetPropertyCommand();
             case "batch":
                 return new BatchCommand();
             default:
