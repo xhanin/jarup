@@ -77,7 +77,7 @@ Replace the content of a file or add a new one. This can be performed with `jar`
 
 An alias for 'replace' is 'add'.
 
-### work with jars of jars [NOT IMPLEMENTED YET]
+### work with jars of jars
 
 All commands can be used on files contained in jars contained in jars (or wars / ears / …):
 
@@ -118,5 +118,6 @@ Implemented commands / features:
 - gen-script
 - batching commands
 - replace
+- jars of jars
 
 Star the project to encourage me :)
