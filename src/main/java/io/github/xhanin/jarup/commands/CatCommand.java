@@ -12,6 +12,7 @@ import java.io.IOException;
 public class CatCommand implements Command<CatCommand> {
     private WorkingCopy workingCopy;
     private String path;
+    private String to;
     private String charset;
 
     public CatCommand() {
@@ -28,6 +29,8 @@ public class CatCommand implements Command<CatCommand> {
             String arg = args[i];
             if (arg.startsWith("--encoding=")) {
                 withEncoding(arg.substring("--encoding=".length()));
+            } else if (arg.startsWith("--to=")) {
+                to(arg.substring("--to=".length()));
             } else {
                 from(arg);
             }
@@ -45,15 +48,24 @@ public class CatCommand implements Command<CatCommand> {
         if (path == null) {
             throw new IllegalStateException("path must be set");
         }
-        if (charset == null) {
-            charset = workingCopy.getDefaultCharsetFor(path);
-        }
+        if (to != null) {
+            workingCopy.copyFileTo(path, to);
+        } else {
+            if (charset == null) {
+                charset = workingCopy.getDefaultCharsetFor(path);
+            }
 
-        System.out.print(workingCopy.readFile(path, charset));
+            System.out.print(workingCopy.readFile(path, charset));
+        }
     }
 
     public CatCommand from(String path) {
         this.path = path;
+        return this;
+    }
+
+    public CatCommand to(String path) {
+        this.to = path;
         return this;
     }
 

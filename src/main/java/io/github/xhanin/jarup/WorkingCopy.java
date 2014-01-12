@@ -62,6 +62,13 @@ public class WorkingCopy implements AutoCloseable {
         return this;
     }
 
+    public WorkingCopy copyFileTo(String from, String to) throws IOException {
+        File toFile = Paths.get(to).toFile();
+        mkdir(toFile.getParentFile());
+        Files.copy(getFile(from).toPath(), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        return this;
+    }
+
     public String getDefaultCharsetFor(String path) {
         if (path.endsWith(".properties")) {
             return "ISO-8859-1";
