@@ -44,6 +44,9 @@ public class BatchCommand implements Command<BatchCommand> {
         List<Command> commands = new ArrayList<>();
         List<String> lines = Files.readAllLines(Paths.get(path), StandardCharsets.UTF_8);
         for (String line : lines) {
+            if (line.trim().isEmpty()) {
+                continue;
+            }
             String[] args = line.split("\\s");
             commands.add(commandLoader.loadCommand(asList(args)));
         }
