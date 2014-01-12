@@ -69,11 +69,13 @@ You can cat (i.e. output the content of a file in console) any file. It's just m
 
 An alias for `cat` is `extract`.
 
-### replace file content [NOT IMPLEMENTED YET]
+### replace / add file content
 
-Replace the content of a file. This can be performed with `jar` command line utility too, it's just convenient to use.
+Replace the content of a file or add a new one. This can be performed with `jar` command line utility too, it's just convenient to use.
 
 `jarup example.jar replace --from=my.properties --to=example.properties`
+
+An alias for 'replace' is 'add'.
 
 ### work with jars of jars [NOT IMPLEMENTED YET]
 
@@ -115,5 +117,6 @@ Implemented commands / features:
 - search-replace
 - gen-script
 - batching commands
+- replace
 
 Star the project to encourage me :)
