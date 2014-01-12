@@ -5,11 +5,14 @@ import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+
+import static java.util.Arrays.asList;
 
 /**
  * Date: 10/1/14
@@ -39,17 +42,21 @@ public class WorkingCopy implements AutoCloseable {
     }
 
     public String readFile(String filePath, String encoding) throws IOException {
-        return IOUtils.toString(new File(root, filePath), Charset.forName(encoding));
+        return IOUtils.toString(getFile(filePath), Charset.forName(encoding));
+    }
+
+    File getFile(String filePath) {
+        return new File(root, filePath.replace(":/", ".$/"));
     }
 
     public WorkingCopy writeFile(String path, String encoding, String content) throws IOException {
-        IOUtils.write(new File(root, path), Charset.forName(encoding), content);
+        IOUtils.write(getFile(path), Charset.forName(encoding), content);
         updated = true;
         return this;
     }
 
     public WorkingCopy copyFileFrom(String from, String to) throws IOException {
-        File toFile = new File(root, to);
+        File toFile = getFile(to);
         mkdir(toFile.getParentFile());
         Files.copy(Paths.get(from), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         return this;
@@ -75,17 +82,37 @@ public class WorkingCopy implements AutoCloseable {
         try (ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(to.toFile())))) {
             final byte data[] = new byte[BUFFER];
 
-            Files.walkFileTree(from.toPath(), new SimpleFileVisitor<Path>() {
+            final Path root = from.toPath();
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    if (!root.equals(dir) && dir.getFileName().toString().endsWith(".$")) {
+                        Path dest = dir.getParent().resolve(dir.getFileName().toString().replaceAll("\\.\\$$", ""));
+                        zip(dir.toFile(), dest);
+                        addZipEntry(dest);
+                        return FileVisitResult.SKIP_SUBTREE;
+                    } else {
+                        return FileVisitResult.CONTINUE;
+                    }
+                }
+
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    ZipEntry entry = new ZipEntry(from.toPath().relativize(file).toString());
+                    if (!isZipFile(file.toString())) {
+                        // zip files are added by compressing corresponding expanded directory
+                        addZipEntry(file);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                private void addZipEntry(Path file) throws IOException {
+                    ZipEntry entry = new ZipEntry(root.relativize(file).toString());
                     out.putNextEntry(entry);
                     BufferedInputStream origin = new BufferedInputStream(new FileInputStream(file.toFile()), BUFFER);
                     int count;
                     while ((count = origin.read(data, 0, BUFFER)) != -1) {
                         out.write(data, 0, count);
                     }
-                    return FileVisitResult.CONTINUE;
                 }
             });
         }
@@ -119,13 +146,22 @@ public class WorkingCopy implements AutoCloseable {
                 }
 
                 // recursive
-    //            if (currentEntry.endsWith(".zip"))
-    //            {
-    //                // found a zip file, try to open
-    //                extractFolder(destFile.getAbsolutePath());
-    //            }
+                if (isZipFile(currentEntry)) {
+                    unzip(destFile.toPath(), new File(destFile.getParentFile(), destFile.getName() + ".$"));
+                }
             }
         }
+    }
+
+    private static boolean isZipFile(String currentEntry) {
+        String s = currentEntry.toLowerCase(Locale.ENGLISH);
+        for (String ext : asList(".jar", ".war", ".ear", ".zip")) {
+            if (s.endsWith(ext)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void mkdir(File to) throws IOException {

@@ -36,6 +36,20 @@ public class WorkingCopyTest {
     }
 
     @Test
+    public void should_handle_jar_of_jar_for_read() throws Exception {
+        Path exampleJarUnderTest = getJarUnderTest("example.war");
+
+        try (WorkingCopy wc = WorkingCopy.prepareFor(exampleJarUnderTest)) {
+            assertThat(wc).isNotNull();
+
+            String s = wc.readFile("WEB-INF/lib/example.jar:/example.properties", "ISO-8859-1");
+
+            assertThat(s).isEqualTo("property1=value\n" +
+                    "prop=être ou ne pas être\n");
+        }
+    }
+
+    @Test
     public void should_update_jar_after_write() throws Exception {
         Path exampleJarUnderTest = getJarUnderTest("example.jar");
 
@@ -47,6 +61,23 @@ public class WorkingCopyTest {
 
         try (WorkingCopy wc = WorkingCopy.prepareFor(exampleJarUnderTest)) {
             String s = wc.readFile("test.txt", "UTF-8");
+            assertThat(s).isEqualTo("this is a test");
+        }
+    }
+
+    @Test
+    public void should_handle_jar_of_jar_for_write() throws Exception {
+        Path exampleJarUnderTest = getJarUnderTest("example.war");
+
+        long jarLengthBeforeUpdate;
+        try (WorkingCopy wc = WorkingCopy.prepareFor(exampleJarUnderTest)) {
+            jarLengthBeforeUpdate = wc.getFile("WEB-INF/lib/example.jar").length();
+            wc.writeFile("WEB-INF/lib/example.jar:/test.txt", "UTF-8", "this is a test");
+        }
+
+        try (WorkingCopy wc = WorkingCopy.prepareFor(exampleJarUnderTest)) {
+            assertThat(wc.getFile("WEB-INF/lib/example.jar").length()).isNotEqualTo(jarLengthBeforeUpdate);
+            String s = wc.readFile("WEB-INF/lib/example.jar:/test.txt", "UTF-8");
             assertThat(s).isEqualTo("this is a test");
         }
     }
