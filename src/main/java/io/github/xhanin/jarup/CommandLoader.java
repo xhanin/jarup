@@ -32,6 +32,8 @@ public class CommandLoader {
                 return new SearchReplaceCommand();
             case "set-property":
                 return new SetPropertyCommand();
+            case "exec":
+                return new ExecCommand();
             case "batch":
                 return new BatchCommand();
             default:
