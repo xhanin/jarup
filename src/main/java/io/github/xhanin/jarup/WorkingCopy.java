@@ -45,8 +45,24 @@ public class WorkingCopy implements AutoCloseable {
         return IOUtils.toString(getFile(filePath), Charset.forName(encoding));
     }
 
-    File getFile(String filePath) {
-        return new File(root, filePath.replace(":/", ".$/"));
+    File getFile(String filePath) throws IOException {
+        while (filePath.contains(":/")) {
+            String subPath = filePath.substring(0, filePath.indexOf(":/"));
+            Path explodedPath = getExplodedPath(root.toPath().resolve(subPath));
+            if (!explodedPath.toFile().exists()) {
+                unzip(root.toPath().resolve(subPath), explodedPath.toFile());
+            }
+            filePath = root.toPath().relativize(explodedPath) + filePath.substring(filePath.indexOf(":/") + 1);
+        }
+        return new File(root, filePath);
+    }
+
+    private static boolean hasExplodedZipFile(Path file) {
+        return getExplodedPath(file).toFile().exists();
+    }
+
+    private static Path getExplodedPath(Path file) {
+        return file.resolveSibling(file.getFileName().toString() + ".$");
     }
 
     public WorkingCopy writeFile(String path, String encoding, String content) throws IOException {
@@ -106,17 +122,19 @@ public class WorkingCopy implements AutoCloseable {
 
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    if (!isZipFile(file.toString())) {
+                    if (!hasExplodedZipFile(file)) {
                         // zip files are added by compressing corresponding expanded directory
                         addZipEntry(file);
                     }
                     return FileVisitResult.CONTINUE;
                 }
 
-                private void addZipEntry(Path file) throws IOException {
-                    ZipEntry entry = new ZipEntry(root.relativize(file).toString());
+                private void addZipEntry(Path path) throws IOException {
+                    ZipEntry entry = new ZipEntry(root.relativize(path).toString());
+                    File file = path.toFile();
+                    entry.setTime(file.lastModified());
                     out.putNextEntry(entry);
-                    BufferedInputStream origin = new BufferedInputStream(new FileInputStream(file.toFile()), BUFFER);
+                    BufferedInputStream origin = new BufferedInputStream(new FileInputStream(file), BUFFER);
                     int count;
                     while ((count = origin.read(data, 0, BUFFER)) != -1) {
                         out.write(data, 0, count);
@@ -152,11 +170,7 @@ public class WorkingCopy implements AutoCloseable {
                 } else {
                     mkdir(destFile);
                 }
-
-                // recursive
-                if (isZipFile(currentEntry)) {
-                    unzip(destFile.toPath(), new File(destFile.getParentFile(), destFile.getName() + ".$"));
-                }
+                destFile.setLastModified(entry.getTime());
             }
         }
     }

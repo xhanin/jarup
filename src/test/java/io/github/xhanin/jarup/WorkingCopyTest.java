@@ -97,6 +97,26 @@ public class WorkingCopyTest {
         }
     }
 
+    @Test
+    public void should_keep_jar_of_inside_untouched() throws Exception {
+        Path exampleJarUnderTest = getJarUnderTest("example.war");
+
+        long jarTimestamp = 1389540958000L;
+        long jarLength = 1421L;
+        try (WorkingCopy wc = WorkingCopy.prepareFor(exampleJarUnderTest)) {
+            assertThat(wc.getFile("WEB-INF/lib/example.jar").lastModified()).isEqualTo(jarTimestamp);
+            assertThat(wc.getFile("WEB-INF/lib/example.jar").length()).isEqualTo(jarLength);
+            wc.writeFile("test.txt", "UTF-8", "test");
+        }
+
+        Thread.sleep(1500);
+
+        try (WorkingCopy wc = WorkingCopy.prepareFor(exampleJarUnderTest)) {
+            assertThat(wc.getFile("WEB-INF/lib/example.jar").lastModified()).isEqualTo(jarTimestamp);
+            assertThat(wc.getFile("WEB-INF/lib/example.jar").length()).isEqualTo(jarLength);
+            assertThat(wc.readFile("test.txt", "UTF-8")).isEqualTo("test");
+        }
+    }
 
     private Path getJarUnderTest(String jar) throws IOException {
         File dir = tmp.newFolder();
