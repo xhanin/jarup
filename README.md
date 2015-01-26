@@ -14,7 +14,7 @@ It is very convenient to use to update configuration files packaged inside a jar
 It is more convenient to use it with a shell/batch file named jarup. you can do `java -jar jarup.jar gen-script` to generate a script for your platform.
 
 On Linux/MacOSX you can also use this simple one line install / update:
-`curl -s https://raw.github.com/xhanin/jarup/master/install.sh | sh`
+`curl -Ls https://raw.github.com/xhanin/jarup/master/install.sh | sh`
 
 ## Usage
 
