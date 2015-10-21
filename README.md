@@ -77,6 +77,14 @@ Replace the content of a file or add a new one. This can be performed with `jar`
 
 An alias for 'replace' is 'add'.
 
+### remove a file
+
+Remove a file.
+
+`jarup example.jar rm --from=example.properties`
+
+Alias for 'rm' are 'remove', 'delete' and 'del'.
+
 ### work with jars of jars
 
 All commands can be used on files contained in jars contained in jars (or wars / ears / …):
