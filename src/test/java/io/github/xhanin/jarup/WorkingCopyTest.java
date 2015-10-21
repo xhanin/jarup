@@ -2,11 +2,13 @@ package io.github.xhanin.jarup;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -20,6 +22,9 @@ public class WorkingCopyTest {
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void should_prepare_working_copy_and_read() throws Exception {
@@ -118,10 +123,40 @@ public class WorkingCopyTest {
         }
     }
 
-    private Path getJarUnderTest(String jar) throws IOException {
+    @Test
+    public void should_update_jar_after_removal() throws Exception {
+        Path archiveUnderTest = getJarUnderTest("example.jar");
+        try (WorkingCopy wc = WorkingCopy.prepareFor(archiveUnderTest)) {
+            assertThat(wc).isNotNull();
+            wc.deleteFile("example.properties");
+        }
+
+        try (WorkingCopy wc = WorkingCopy.prepareFor(archiveUnderTest)) {
+            assertThat(wc.getFile("example.properties")).doesNotExist();
+            assertThat(wc.getFile("example2.properties")).exists();
+        }
+    }
+
+    @Test
+    public void should_handle_jar_of_jar_for_removal() throws Exception {
+        Path archiveUnderTest = getJarUnderTest("example.war");
+        try (WorkingCopy wc = WorkingCopy.prepareFor(archiveUnderTest)) {
+            assertThat(wc).isNotNull();
+            wc.deleteFile("WEB-INF/lib/example.jar:/example.properties");
+        }
+
+        thrown.expect(NoSuchFileException.class);
+        try (WorkingCopy wc = WorkingCopy.prepareFor(archiveUnderTest)) {
+            assertThat(wc.readFile("WEB-INF/lib/example.jar:/example.properties", "UTF-8")).isEmpty();
+        }
+    }
+
+
+
+    private Path getJarUnderTest(String archive) throws IOException {
         File dir = tmp.newFolder();
-        Path jarUnderTest = dir.toPath().resolve(jar);
-        Files.copy(Paths.get("src/test/jars-content/" + jar), jarUnderTest);
+        Path jarUnderTest = dir.toPath().resolve(archive);
+        Files.copy(Paths.get("src/test/jars-content/" + archive), jarUnderTest);
         return jarUnderTest;
     }
 }
