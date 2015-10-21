@@ -36,6 +36,11 @@ public class CommandLoader {
                 return new ExecCommand();
             case "batch":
                 return new BatchCommand();
+            case "del":
+            case "delete":
+            case "rm":
+            case "remove":
+                return new RmCommand();
             default:
                 return null;
         }

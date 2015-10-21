@@ -2,15 +2,19 @@ package io.github.xhanin.jarup;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.newBufferedReader;
+import static java.nio.file.Files.newBufferedWriter;
 
 /**
  * Date: 10/1/14
@@ -44,7 +48,7 @@ public class WorkingCopy implements AutoCloseable {
     }
 
     public String readFile(String filePath, String encoding) throws IOException {
-        return IOUtils.toString(getFile(filePath, false), Charset.forName(encoding));
+        return IOUtils.toString(getFile(filePath, FileOperation.READ), Charset.forName(encoding));
     }
 
     // for tests only
@@ -52,7 +56,11 @@ public class WorkingCopy implements AutoCloseable {
         return new File(root, filePath);
     }
 
-    private File getFile(String filePath, boolean forWrite) throws IOException {
+    public void deleteFile(String path) throws IOException {
+        getFile(path, FileOperation.DELETE);
+    }
+
+    private File getFile(String filePath, FileOperation operation) throws IOException {
         Path archiveRoot = root.toPath();
         String entryName = filePath;
         while (filePath.contains(":/")) {
@@ -66,11 +74,9 @@ public class WorkingCopy implements AutoCloseable {
             filePath = root.toPath().relativize(explodedPath) + "/" + entryName;
         }
         File file = new File(root, filePath);
-        if (forWrite) {
+        if (operation.requiresUpdate()) {
             updated = true;
-            if (!file.exists()) {
-                addEntry(archiveRoot, entryName);
-            }
+            operation.updateEntry(file, archiveRoot, entryName);
         }
         return file;
     }
@@ -80,21 +86,46 @@ public class WorkingCopy implements AutoCloseable {
     }
 
     private static void addEntry(Path archiveRoot, String entryName) throws IOException {
-        try (BufferedWriter entries = Files.newBufferedWriter(entriesPath(archiveRoot),
-                StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
+        try (BufferedWriter entries = newBufferedWriter(entriesPath(archiveRoot),
+                UTF_8, StandardOpenOption.APPEND)) {
             entries.write(entryName(archiveRoot.resolve(entryName), entryName));
             entries.newLine();
         }
     }
+    private static void removeEntry(Path archiveRoot, String entryName) throws IOException {
+        Path path = entriesPath(archiveRoot);
+        File temp = Files.createTempFile(archiveRoot, "temp", "jarup").toFile();
+        try (BufferedReader reader = newBufferedReader(path, UTF_8);
+             BufferedWriter writer = newBufferedWriter(temp.toPath(), UTF_8)) {
+
+            String entryLine = entryName(archiveRoot.resolve(entryName), entryName);
+            String currentLine;
+            while ((currentLine = reader.readLine()) != null) {
+                String current = currentLine.trim();
+                if (current.equals(entryLine)) {
+                    continue;
+                }
+                writer.write(current);
+                writer.newLine();
+            }
+        }
+
+        File target = path.toFile();
+        if (!temp.renameTo(target)) {
+            throw new FileSystemException(
+                String.format("Could not copy temporary entries files <%s> to <%s>", temp.getPath(), target.getPath())
+            );
+        }
+    }
 
     public WorkingCopy writeFile(String path, String encoding, String content) throws IOException {
-        File file = getFile(path, true);
+        File file = getFile(path, FileOperation.UPDATE);
         IOUtils.write(file, Charset.forName(encoding), content);
         return this;
     }
 
     public WorkingCopy copyFileFrom(String from, String to) throws IOException {
-        File toFile = getFile(to, true);
+        File toFile = getFile(to, FileOperation.UPDATE);
         mkdir(toFile.getParentFile());
         Files.copy(Paths.get(from), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         return this;
@@ -103,7 +134,7 @@ public class WorkingCopy implements AutoCloseable {
     public WorkingCopy copyFileTo(String from, String to) throws IOException {
         File toFile = Paths.get(to).toFile();
         mkdir(toFile.getParentFile());
-        Files.copy(getFile(from, false).toPath(), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(getFile(from, FileOperation.UPDATE).toPath(), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         return this;
     }
 
@@ -143,7 +174,7 @@ public class WorkingCopy implements AutoCloseable {
             });
 
             // process all entries as listed in entries file
-            for (String entry : Files.readAllLines(entriesPath(root), StandardCharsets.UTF_8)) {
+            for (String entry : Files.readAllLines(entriesPath(root), UTF_8)) {
                 addZipEntry(out, root, root.resolve(entry));
             }
         }
@@ -201,7 +232,7 @@ public class WorkingCopy implements AutoCloseable {
         mkdir(to);
 
         try (ZipFile zip = new ZipFile(from.toFile());
-             BufferedWriter entries = Files.newBufferedWriter(entriesPath(to.toPath()), StandardCharsets.UTF_8)
+             BufferedWriter entries = newBufferedWriter(entriesPath(to.toPath()), UTF_8)
              ) {
             Enumeration zipFileEntries = zip.entries();
             while (zipFileEntries.hasMoreElements()) {
@@ -250,5 +281,49 @@ public class WorkingCopy implements AutoCloseable {
         if (!to.mkdirs()) {
             throw new IOException("can't create directory " + to.getAbsolutePath());
         }
+    }
+
+    private enum FileOperation {
+        READ {
+            @Override
+            public boolean requiresUpdate() {
+                return false;
+            }
+
+            @Override
+            public void updateEntry(File file, Path archiveRoot, String entryName) {
+                throw new UnsupportedOperationException();
+            }
+        },
+        UPDATE {
+            @Override
+            public boolean requiresUpdate() {
+                return true;
+            }
+
+            @Override
+            public void updateEntry(File file, Path archiveRoot, String entryName) throws IOException {
+                if (!file.exists()) {
+                    addEntry(archiveRoot, entryName);
+                }
+            }
+        },
+        DELETE {
+            @Override
+            public boolean requiresUpdate() {
+                return true;
+            }
+
+            @Override
+            public void updateEntry(File file, Path archiveRoot, String entryName) throws IOException {
+                if (file.exists() && file.delete()) {
+                    removeEntry(archiveRoot, entryName);
+                }
+            }
+        };
+
+        public abstract boolean requiresUpdate();
+
+        public abstract void updateEntry(File file, Path archiveRoot, String entryName) throws IOException;
     }
 }
