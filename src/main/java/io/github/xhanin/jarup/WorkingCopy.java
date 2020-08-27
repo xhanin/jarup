@@ -29,7 +29,6 @@ public class WorkingCopy implements AutoCloseable {
     private static final String MANIFEST = JarFile.MANIFEST_NAME;
     private static final String MANIFEST_DIR = "META-INF/";
 
-
     public static WorkingCopy prepareFor(Path jarPath) throws IOException {
         String id = TS + "-" + R + "-" + C.incrementAndGet();
 
@@ -92,6 +91,7 @@ public class WorkingCopy implements AutoCloseable {
             entries.newLine();
         }
     }
+
     private static void removeEntry(Path archiveRoot, String entryName) throws IOException {
         Path path = entriesPath(archiveRoot);
         File temp = Files.createTempFile(archiveRoot, "temp", "jarup").toFile();
@@ -113,7 +113,7 @@ public class WorkingCopy implements AutoCloseable {
         File target = path.toFile();
         if (!temp.renameTo(target)) {
             throw new FileSystemException(
-                String.format("Could not copy temporary entries files <%s> to <%s>", temp.getPath(), target.getPath())
+                    String.format("Could not copy temporary entries files <%s> to <%s>", temp.getPath(), target.getPath())
             );
         }
     }
@@ -229,19 +229,19 @@ public class WorkingCopy implements AutoCloseable {
     }
 
     private static void unzip(Path from, File to) throws IOException {
+        to = to.getCanonicalFile();
         mkdir(to);
 
         try (ZipFile zip = new ZipFile(from.toFile());
              BufferedWriter entries = newBufferedWriter(entriesPath(to.toPath()), UTF_8)
-             ) {
+        ) {
             Enumeration zipFileEntries = zip.entries();
             while (zipFileEntries.hasMoreElements()) {
                 ZipEntry entry = (ZipEntry) zipFileEntries.nextElement();
                 entries.write(entry.getName());
                 entries.newLine();
 
-                String currentEntry = entry.getName();
-                File destFile = new File(to, currentEntry);
+                File destFile = createNewFile(to, entry.getName());
                 mkdir(destFile.getParentFile());
 
                 if (!entry.isDirectory()) {
@@ -261,6 +261,15 @@ public class WorkingCopy implements AutoCloseable {
                 destFile.setLastModified(entry.getTime());
             }
         }
+    }
+
+    private static File createNewFile(File to, String entry) throws IOException {
+        File destFile = new File(to, entry);
+        String destFilePath = destFile.getCanonicalPath();
+        if (!destFilePath.startsWith(to + File.separator)) {
+            throw new IOException("Entry is outside of the target dir: " + entry);
+        }
+        return destFile;
     }
 
     private static Path entriesPath(Path root) {
