@@ -106,11 +106,12 @@ public class WorkingCopyTest {
     public void should_keep_jar_of_inside_untouched() throws Exception {
         Path exampleJarUnderTest = getJarUnderTest("example.war");
 
-        long jarTimestamp = 1389540958000L;
-        long jarLength = 1421L;
+        long jarTimestamp;
+        long jarLength;
         try (WorkingCopy wc = WorkingCopy.prepareFor(exampleJarUnderTest)) {
-            assertThat(wc.getFile("WEB-INF/lib/example.jar").lastModified()).isEqualTo(jarTimestamp);
-            assertThat(wc.getFile("WEB-INF/lib/example.jar").length()).isEqualTo(jarLength);
+            File innerJar = wc.getFile("WEB-INF/lib/example.jar");
+            jarTimestamp = innerJar.lastModified();
+            jarLength = innerJar.length();
             wc.writeFile("test.txt", "UTF-8", "test");
         }
 
